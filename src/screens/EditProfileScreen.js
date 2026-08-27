@@ -29,7 +29,24 @@ export default function EditProfileScreen({ navigation }) {
         setName(data.name || '');
         setBio(data.bio || '');
         setEmail(data.email || '');
-        setAvatar(data.avatar || '');
+
+        let currentAvatar = data.avatar || '';
+        
+        // Nếu profile chưa có avatar, tìm trong registered_users
+        if (!currentAvatar && data.email) {
+          const usersStr = await AsyncStorage.getItem('registered_users');
+          if (usersStr) {
+            const users = JSON.parse(usersStr);
+            const matched = users.find((u) => u.email && u.email.toLowerCase().trim() === data.email.toLowerCase().trim());
+            if (matched && matched.avatar) {
+              currentAvatar = matched.avatar;
+            }
+          }
+        }
+
+        // Nếu vẫn không có, lấy fallback chuẩn theo tên
+        const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name || 'User')}&background=5669FF&color=fff&size=256`;
+        setAvatar(currentAvatar || fallbackAvatar);
       }
     } catch (error) {
       console.log('Lỗi khi tải dữ liệu cá nhân:', error);
@@ -70,9 +87,9 @@ export default function EditProfileScreen({ navigation }) {
       }
 
       const profileData = { name, bio, email: targetEmail, avatar };
-
       await AsyncStorage.setItem('user_profile', JSON.stringify(profileData));
 
+      // Đồng thời cập nhật lại trong registered_users để khớp toàn bộ hệ thống
       const usersStr = await AsyncStorage.getItem('registered_users');
       if (usersStr) {
         let users = JSON.parse(usersStr);
@@ -101,8 +118,8 @@ export default function EditProfileScreen({ navigation }) {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={themeColors.textPrimary} />
+        <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.backBtn, { backgroundColor: themeColors.surface, borderColor: themeColors.border, borderWidth: 1 }]}>
+          <Ionicons name="arrow-back" size={22} color={themeColors.textPrimary} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: themeColors.textPrimary }]}>{t('editProfile')}</Text>
         <View style={{ width: 40 }} />
@@ -143,7 +160,7 @@ export default function EditProfileScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12 },
-  backBtn: { width: 40, height: 40, justifyContent: 'center' },
+  backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 18, fontWeight: '700' },
   scroll: { padding: 20 },
   avatarContainer: { alignSelf: 'center', marginBottom: 24, position: 'relative' },
