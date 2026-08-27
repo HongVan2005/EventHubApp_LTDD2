@@ -1,7 +1,7 @@
 // ============================================================
 // ROOT NAVIGATOR - Stack điều hướng gốc của toàn bộ ứng dụng
 // Bao gồm: Splash -> Onboarding -> Auth -> Main (Drawer + Tabs)
-// và các màn hình con khác (chi tiết, chỉnh sửa cá nhân, nhắn tin, quản lý tài khoản...)
+// và các màn hình con khác (chi tiết, chỉnh sửa cá nhân, nhắn tin, quản lý tài khoản, cài đặt...)
 // ============================================================
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
@@ -25,6 +25,7 @@ import MyProfileScreen from '../screens/MyProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import MessageScreen from '../screens/MessageScreen';
 import AccountManagerScreen from '../screens/AccountManagerScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 import OrganizerProfileScreen from '../screens/OrganizerProfileScreen';
 import NotificationScreen from '../screens/NotificationScreen';
 import InviteFriendScreen from '../screens/InviteFriendScreen';
@@ -64,6 +65,7 @@ export default function RootNavigator() {
         <Stack.Screen name="EditProfile" component={EditProfileScreen} />
         <Stack.Screen name="Message" component={MessageScreen} />
         <Stack.Screen name="AccountManager" component={AccountManagerScreen} />
+        <Stack.Screen name="Settings" component={SettingsScreen} />
         <Stack.Screen name="OrganizerProfile" component={OrganizerProfileScreen} />
         <Stack.Screen name="Notification" component={NotificationScreen} />
         <Stack.Screen name="InviteFriend" component={InviteFriendScreen} />
