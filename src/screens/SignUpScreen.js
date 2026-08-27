@@ -1,13 +1,22 @@
 // src/screens/SignUpScreen.js
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppInput from '../components/AppInput';
 import AppButton from '../components/AppButton';
 import ScreenHeader from '../components/ScreenHeader';
 import { colors, fontSize, spacing } from '../theme/colors';
+import { ThemeContext } from '../context/ThemeContext';
 
 export default function SignUpScreen({ navigation }) {
+  const themeContext = useContext(ThemeContext);
+  const themeColors = themeContext?.themeColors || {
+    background: colors.white,
+    textPrimary: colors.textPrimary,
+    textSecondary: colors.textSecondary,
+    primary: colors.primary,
+  };
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,8 +46,19 @@ export default function SignUpScreen({ navigation }) {
       // Tạo mã OTP ngẫu nhiên 4 chữ số (Ví dụ: 1234)
       const generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
 
-      // Lưu tài khoản tạm thời + mã OTP
-      const tempUser = { name, email: email.toLowerCase().trim(), password, otp: generatedOtp };
+      // Tạo Avatar mặc định chuẩn theo Tên đăng ký (Tránh lỗi mất avatar)
+      const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name.trim())}&background=5669FF&color=fff&size=256`;
+
+      // Lưu tài khoản tạm thời + mã OTP + avatar mặc định
+      const tempUser = {
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        password,
+        avatar: defaultAvatar,
+        bio: 'Thành viên mới của EventHub.',
+        otp: generatedOtp,
+      };
+
       await AsyncStorage.setItem('temp_user', JSON.stringify(tempUser));
 
       // Hiển thị mã OTP để test
@@ -53,10 +73,10 @@ export default function SignUpScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
       <ScreenHeader title="" onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <Text style={styles.heading}>Sign up</Text>
+        <Text style={[styles.heading, { color: themeColors.textPrimary }]}>Sign up</Text>
 
         <AppInput icon="person-outline" placeholder="Your name" value={name} onChangeText={setName} style={styles.field} />
         <AppInput icon="mail-outline" placeholder="abc@email.com" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" style={styles.field} />
@@ -66,9 +86,9 @@ export default function SignUpScreen({ navigation }) {
         <AppButton title="SIGN UP" showArrow onPress={handleSignUp} style={{ marginTop: spacing.lg }} />
 
         <View style={styles.signinRow}>
-          <Text style={styles.signinText}>Already have an account? </Text>
+          <Text style={[styles.signinText, { color: themeColors.textSecondary }]}>Already have an account? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
-            <Text style={styles.signinLink}>Sign in</Text>
+            <Text style={[styles.signinLink, { color: themeColors.primary }]}>Sign in</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -77,11 +97,11 @@ export default function SignUpScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
+  container: { flex: 1 },
   scroll: { padding: spacing.lg, paddingBottom: spacing.xxl },
-  heading: { fontSize: fontSize.xl, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.lg },
+  heading: { fontSize: fontSize.xl, fontWeight: '800', marginBottom: spacing.lg },
   field: { marginBottom: spacing.md },
   signinRow: { flexDirection: 'row', justifyContent: 'center', marginTop: spacing.lg },
-  signinText: { color: colors.textSecondary },
-  signinLink: { color: colors.primary, fontWeight: '700' },
+  signinText: { fontSize: fontSize.sm },
+  signinLink: { fontWeight: '700', fontSize: fontSize.sm },
 });

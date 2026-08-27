@@ -1,41 +1,68 @@
 // src/navigation/MainDrawer.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 import MainTabNavigator from './MainTabNavigator'; 
+import { ThemeContext } from '../context/ThemeContext';
 
 const Drawer = createDrawerNavigator();
 
-const drawerItems = [
-  { id: '1', label: 'My Profile', icon: 'person-outline', screen: 'MyProfile' },
-  { id: '2', label: 'Message', icon: 'chatbubble-outline', screen: 'Message' },
-  { id: '3', label: 'Calendar', icon: 'calendar-outline', screen: 'SeeAllEvents' },
-  { id: '4', label: 'Bookmark', icon: 'bookmark-outline', screen: 'Events' },
-  { id: '5', label: 'Account Manager', icon: 'people-outline', screen: 'AccountManager' },
-  { id: '6', label: 'Contact Us', icon: 'call-outline', screen: 'InviteFriend' },
-  { id: '7', label: 'Settings', icon: 'settings-outline', screen: 'EditProfile' },
-  { id: '8', label: 'Help & FAQ', icon: 'help-circle-outline', screen: 'Notification' },
-];
-
 function CustomDrawerContent(props) {
+  const { t } = useTranslation();
+  const themeContext = useContext(ThemeContext);
+  const themeColors = themeContext?.themeColors || {
+    background: '#FFFFFF',
+    textPrimary: '#120D26',
+    textSecondary: '#747688',
+    border: '#E4E6EB',
+    primary: '#5669FF',
+  };
+
   const [user, setUser] = useState({
     name: 'Nguyễn Thị Hồng Vân',
-    avatar: 'https://i.pravatar.cc/300?img=12'
+    avatar: 'https://ui-avatars.com/api/?name=Nguyen+Thi+Hong+Van&background=5669FF&color=fff&size=256'
   });
 
-  // Load thông tin lưu từ AsyncStorage để cập nhật thanh bên
+  const drawerItems = [
+    { id: '1', label: t('profile') || 'My Profile', icon: 'person-outline', screen: 'MyProfile' },
+    { id: '2', label: t('messages') || 'Message', icon: 'chatbubble-outline', screen: 'Message' },
+    { id: '3', label: 'Calendar', icon: 'calendar-outline', screen: 'SeeAllEvents' },
+    { id: '4', label: 'Bookmark', icon: 'bookmark-outline', screen: 'Events' },
+    { id: '5', label: t('accountManager') || 'Account Manager', icon: 'people-outline', screen: 'AccountManager' },
+    { id: '6', label: 'Contact Us', icon: 'call-outline', screen: 'InviteFriend' },
+    { id: '7', label: t('settings') || 'Settings', icon: 'settings-outline', screen: 'Settings' },
+    { id: '8', label: 'Help & FAQ', icon: 'help-circle-outline', screen: 'Notification' },
+  ];
+
   useEffect(() => {
     const loadUserData = async () => {
       try {
         const savedData = await AsyncStorage.getItem('user_profile');
         if (savedData !== null) {
           const data = JSON.parse(savedData);
+          const userName = data.name || 'Nguyễn Thị Hồng Vân';
+          let userAvatar = data.avatar || '';
+
+          if (!userAvatar && data.email) {
+            const usersStr = await AsyncStorage.getItem('registered_users');
+            if (usersStr) {
+              const users = JSON.parse(usersStr);
+              const matched = users.find((u) => u.email && u.email.toLowerCase().trim() === data.email.toLowerCase().trim());
+              if (matched && matched.avatar) {
+                userAvatar = matched.avatar;
+              }
+            }
+          }
+
+          const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=5669FF&color=fff&size=256`;
+
           setUser({
-            name: data.name || 'Nguyễn Thị Hồng Vân',
-            avatar: data.avatar || 'https://i.pravatar.cc/300?img=12'
+            name: userName,
+            avatar: userAvatar || fallbackAvatar
           });
         }
       } catch (e) {
@@ -66,9 +93,8 @@ function CustomDrawerContent(props) {
   };
 
   return (
-    <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1 }}>
+    <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1, backgroundColor: themeColors.background }}>
       <View style={styles.container}>
-        {/* HEADER USER */}
         <TouchableOpacity 
           style={styles.profileHeader} 
           onPress={() => {
@@ -77,11 +103,10 @@ function CustomDrawerContent(props) {
           }}
         >
           <Image source={{ uri: user.avatar }} style={styles.avatar} />
-          <Text style={styles.userName}>{user.name}</Text>
-          <Text style={styles.userSub}>120 Followers · 260 Following</Text>
+          <Text style={[styles.userName, { color: themeColors.textPrimary }]}>{user.name}</Text>
+          <Text style={[styles.userSub, { color: themeColors.textSecondary }]}>120 Followers · 260 Following</Text>
         </TouchableOpacity>
 
-        {/* DANH SÁCH MENU */}
         <View style={styles.menuList}>
           {drawerItems.map((item) => (
             <TouchableOpacity
@@ -92,12 +117,11 @@ function CustomDrawerContent(props) {
                 props.navigation.navigate(item.screen);
               }}
             >
-              <Ionicons name={item.icon} size={22} color="#120D26" style={styles.icon} />
-              <Text style={styles.menuLabel}>{item.label}</Text>
+              <Ionicons name={item.icon} size={22} color={themeColors.textPrimary} style={styles.icon} />
+              <Text style={[styles.menuLabel, { color: themeColors.textPrimary }]}>{item.label}</Text>
             </TouchableOpacity>
           ))}
 
-          {/* NÚT CHUYỂN ĐỔI TÀI KHOẢN */}
           <TouchableOpacity 
             style={styles.menuItem} 
             onPress={() => {
@@ -106,13 +130,12 @@ function CustomDrawerContent(props) {
             }}
           >
             <Ionicons name="swap-horizontal-outline" size={22} color="#5669FF" style={styles.icon} />
-            <Text style={[styles.menuLabel, { color: '#5669FF' }]}>Switch Account</Text>
+            <Text style={[styles.menuLabel, { color: '#5669FF' }]}>{t('switchAccount') || 'Switch Account'}</Text>
           </TouchableOpacity>
 
-          {/* NÚT SIGN OUT */}
           <TouchableOpacity style={styles.menuItem} onPress={handleSignOut}>
             <Ionicons name="log-out-outline" size={22} color="#F56B3F" style={styles.icon} />
-            <Text style={[styles.menuLabel, { color: '#F56B3F' }]}>Sign Out</Text>
+            <Text style={[styles.menuLabel, { color: '#F56B3F' }]}>{t('signOut') || 'Sign Out'}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -138,10 +161,10 @@ const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 20 },
   profileHeader: { paddingHorizontal: 20, marginBottom: 20 },
   avatar: { width: 60, height: 60, borderRadius: 30, marginBottom: 12 },
-  userName: { fontSize: 18, fontWeight: '700', color: '#120D26' },
-  userSub: { fontSize: 12, color: '#747688', marginTop: 4 },
+  userName: { fontSize: 18, fontWeight: '700' },
+  userSub: { fontSize: 12, marginTop: 4 },
   menuList: { paddingHorizontal: 12, marginTop: 10 },
   menuItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 12, borderRadius: 8 },
   icon: { marginRight: 16 },
-  menuLabel: { fontSize: 15, fontWeight: '500', color: '#120D26' },
+  menuLabel: { fontSize: 15, fontWeight: '500' },
 });

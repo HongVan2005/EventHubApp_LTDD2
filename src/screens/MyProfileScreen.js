@@ -1,6 +1,4 @@
-// ============================================================
-// 17. MY PROFILE - Hồ sơ cá nhân của người dùng hiện tại
-// ============================================================
+// src/screens/MyProfileScreen.js
 import React, { useState, useCallback, useContext } from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -23,43 +21,60 @@ export default function MyProfileScreen({ navigation }) {
   };
 
   const [profile, setProfile] = useState({
-    name: currentUser.name,
-    about: currentUser.about,
-    avatar: 'https://i.pravatar.cc/300?img=12',
+    name: '',
+    about: '',
+    avatar: '',
   });
 
-  // Tự động load dữ liệu mới từ AsyncStorage mỗi khi màn hình Profile được focus
   useFocusEffect(
     useCallback(() => {
-      const loadProfileData = async () => {
-        try {
-          const savedData = await AsyncStorage.getItem('user_profile');
-          if (savedData !== null) {
-            const data = JSON.parse(savedData);
-            setProfile({
-              name: data.name || currentUser.name,
-              about: data.bio || data.about || currentUser.about,
-              avatar: data.avatar || 'https://i.pravatar.cc/300?img=12',
-            });
-          }
-        } catch (error) {
-          console.log('Lỗi tải thông tin cá nhân:', error);
-        }
-      };
-
       loadProfileData();
     }, [])
   );
 
+  const loadProfileData = async () => {
+    try {
+      const savedData = await AsyncStorage.getItem('user_profile');
+      let currentAvatar = '';
+      let currentName = currentUser.name;
+      let currentAbout = currentUser.about;
+
+      if (savedData !== null) {
+        const data = JSON.parse(savedData);
+        currentName = data.name || currentUser.name;
+        currentAbout = data.bio || data.about || currentUser.about;
+        currentAvatar = data.avatar || '';
+
+        // Đọc dữ liệu từ registered_users nếu user_profile chưa có ảnh
+        if (!currentAvatar && data.email) {
+          const usersStr = await AsyncStorage.getItem('registered_users');
+          if (usersStr) {
+            const users = JSON.parse(usersStr);
+            const matched = users.find((u) => u.email && u.email.toLowerCase().trim() === data.email.toLowerCase().trim());
+            if (matched && matched.avatar) {
+              currentAvatar = matched.avatar;
+            }
+          }
+        }
+      }
+
+      const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentName)}&background=5669FF&color=fff&size=256`;
+
+      setProfile({
+        name: currentName,
+        about: currentAbout,
+        avatar: currentAvatar || fallbackAvatar,
+      });
+    } catch (error) {
+      console.log('Lỗi tải thông tin cá nhân:', error);
+    }
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
       <ScrollView contentContainerStyle={{ paddingBottom: spacing.xl }}>
-        {/* HEADER BAR */}
         <View style={styles.headerRow}>
-          <TouchableOpacity 
-            onPress={() => navigation.goBack()} 
-            style={[styles.roundBtn, { backgroundColor: themeColors.surface }]}
-          >
+          <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.roundBtn, { backgroundColor: themeColors.surface }]}>
             <Ionicons name="chevron-back" size={22} color={themeColors.textPrimary} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: themeColors.textPrimary }]}>Profile</Text>
@@ -68,7 +83,6 @@ export default function MyProfileScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        {/* PROFILE CARD */}
         <View style={styles.profileBox}>
           <Image source={{ uri: profile.avatar }} style={styles.avatar} />
           <Text style={[styles.name, { color: themeColors.textPrimary }]}>{profile.name}</Text>
@@ -83,21 +97,16 @@ export default function MyProfileScreen({ navigation }) {
               <Text style={[styles.statLabel, { color: themeColors.textSecondary }]}>Following</Text>
             </View>
           </View>
-          <TouchableOpacity 
-            style={[styles.editBtn, { borderColor: themeColors.primary }]} 
-            onPress={() => navigation.navigate('EditProfile')}
-          >
+          <TouchableOpacity style={[styles.editBtn, { borderColor: themeColors.primary }]} onPress={() => navigation.navigate('EditProfile')}>
             <Text style={[styles.editText, { color: themeColors.primary }]}>Edit Profile</Text>
           </TouchableOpacity>
         </View>
 
-        {/* ABOUT ME SECTION */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>About Me</Text>
           <Text style={[styles.aboutText, { color: themeColors.textSecondary }]}>{profile.about}</Text>
         </View>
 
-        {/* INTERESTS SECTION */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>Interest</Text>
           <View style={styles.interestRow}>
@@ -109,23 +118,14 @@ export default function MyProfileScreen({ navigation }) {
           </View>
         </View>
 
-        {/* MY EVENTS SECTION */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>My Events</Text>
           {events.slice(0, 2).map((ev) => (
-            <TouchableOpacity 
-              key={ev.id} 
-              style={styles.eventRow} 
-              onPress={() => navigation.navigate('EventDetails', { event: ev })}
-            >
+            <TouchableOpacity key={ev.id} style={styles.eventRow} onPress={() => navigation.navigate('EventDetails', { event: ev })}>
               <Image source={{ uri: ev.image }} style={styles.eventThumb} />
               <View style={{ marginLeft: spacing.sm, flex: 1 }}>
-                <Text style={[styles.eventTitle, { color: themeColors.textPrimary }]} numberOfLines={1}>
-                  {ev.title}
-                </Text>
-                <Text style={[styles.eventSub, { color: themeColors.textSecondary }]}>
-                  {ev.date} · {ev.location}
-                </Text>
+                <Text style={[styles.eventTitle, { color: themeColors.textPrimary }]} numberOfLines={1}>{ev.title}</Text>
+                <Text style={[styles.eventSub, { color: themeColors.textSecondary }]}>{ev.date} · {ev.location}</Text>
               </View>
             </TouchableOpacity>
           ))}
