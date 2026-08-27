@@ -8,13 +8,13 @@ import AppInput from '../components/AppInput';
 import AppButton from '../components/AppButton';
 
 export default function EditProfileScreen({ navigation }) {
-  const [name, setName] = useState('Ashfak Sayem');
-  const [bio, setBio] = useState('Yêu thích du lịch và âm nhạc. Thường xuyên tổ chức các buổi gặp gỡ.');
-  const [email, setEmail] = useState('ashfak@gmail.com');
+  const [name, setName] = useState('Nguyễn Thị Hồng Vân');
+  const [bio, setBio] = useState('Yêu thích du lịch và âm nhạc. Thường xuyên tổ chức các buổi gặp gỡ cộng đồng vào cuối tuần.');
+  const [email, setEmail] = useState('');
   const [avatar, setAvatar] = useState('https://i.pravatar.cc/300?img=12');
   const [loading, setLoading] = useState(false);
 
-  // Tải dữ liệu đã lưu từ bộ nhớ máy khi mở màn hình
+  // Tải dữ liệu tài khoản đang đăng nhập từ AsyncStorage khi mở màn hình
   useEffect(() => {
     loadProfileData();
   }, []);
@@ -36,7 +36,6 @@ export default function EditProfileScreen({ navigation }) {
 
   // Chọn ảnh từ thư viện điện thoại
   const pickImage = async () => {
-    // Yêu cầu quyền truy cập thư viện ảnh
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
       Alert.alert('Thông báo', 'Bạn cần cấp quyền truy cập thư viện để đổi ảnh đại diện!');
@@ -55,13 +54,28 @@ export default function EditProfileScreen({ navigation }) {
     }
   };
 
-  // Lưu thông tin vĩnh viễn vào AsyncStorage
+  // Lưu thông tin vĩnh viễn & đồng bộ avatar vào danh sách tài khoản
   const handleSave = async () => {
     setLoading(true);
     try {
       const profileData = { name, bio, email, avatar };
-      await AsyncStorage.setItem('user_profile', JSON.stringify(profileData));
       
+      // 1. Lưu thông tin tài khoản đang đăng nhập
+      await AsyncStorage.setItem('user_profile', JSON.stringify(profileData));
+
+      // 2. Cập nhật luôn name và avatar vào danh sách tất cả tài khoản
+      const usersStr = await AsyncStorage.getItem('registered_users');
+      if (usersStr) {
+        let users = JSON.parse(usersStr);
+        users = users.map((u) => {
+          if (u.email && email && u.email.toLowerCase() === email.toLowerCase()) {
+            return { ...u, name, avatar, bio };
+          }
+          return u;
+        });
+        await AsyncStorage.setItem('registered_users', JSON.stringify(users));
+      }
+
       Alert.alert('Thành công', 'Thông tin cá nhân đã được lưu thành công!', [
         { text: 'OK', onPress: () => navigation.goBack() }
       ]);
@@ -95,7 +109,7 @@ export default function EditProfileScreen({ navigation }) {
         <AppInput icon="person-outline" value={name} onChangeText={setName} style={styles.field} />
 
         <Text style={styles.label}>Email</Text>
-        <AppInput icon="mail-outline" value={email} onChangeText={setEmail} keyboardType="email-address" style={styles.field} />
+        <AppInput icon="mail-outline" value={email} onChangeText={setEmail} keyboardType="email-address" style={styles.field} editable={false} />
 
         <Text style={styles.label}>About Me</Text>
         <AppInput icon="information-circle-outline" value={bio} onChangeText={setBio} multiline style={styles.field} />

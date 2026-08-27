@@ -14,9 +14,10 @@ const drawerItems = [
   { id: '2', label: 'Message', icon: 'chatbubble-outline', screen: 'Message' },
   { id: '3', label: 'Calendar', icon: 'calendar-outline', screen: 'SeeAllEvents' },
   { id: '4', label: 'Bookmark', icon: 'bookmark-outline', screen: 'Events' },
-  { id: '5', label: 'Contact Us', icon: 'call-outline', screen: 'InviteFriend' },
-  { id: '6', label: 'Settings', icon: 'settings-outline', screen: 'EditProfile' },
-  { id: '7', label: 'Help & FAQ', icon: 'help-circle-outline', screen: 'Notification' },
+  { id: '5', label: 'Account Manager', icon: 'people-outline', screen: 'AccountManager' },
+  { id: '6', label: 'Contact Us', icon: 'call-outline', screen: 'InviteFriend' },
+  { id: '7', label: 'Settings', icon: 'settings-outline', screen: 'EditProfile' },
+  { id: '8', label: 'Help & FAQ', icon: 'help-circle-outline', screen: 'Notification' },
 ];
 
 function CustomDrawerContent(props) {
@@ -56,7 +57,10 @@ function CustomDrawerContent(props) {
       { 
         text: 'Sign Out', 
         style: 'destructive',
-        onPress: () => props.navigation.reset({ index: 0, routes: [{ name: 'SignIn' }] }) 
+        onPress: async () => {
+          await AsyncStorage.removeItem('userToken');
+          props.navigation.reset({ index: 0, routes: [{ name: 'SignIn' }] });
+        }
       },
     ]);
   };
@@ -92,6 +96,18 @@ function CustomDrawerContent(props) {
               <Text style={styles.menuLabel}>{item.label}</Text>
             </TouchableOpacity>
           ))}
+
+          {/* NÚT CHUYỂN ĐỔI TÀI KHOẢN */}
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => {
+              props.navigation.closeDrawer();
+              props.navigation.navigate('AccountManager');
+            }}
+          >
+            <Ionicons name="swap-horizontal-outline" size={22} color="#5669FF" style={styles.icon} />
+            <Text style={[styles.menuLabel, { color: '#5669FF' }]}>Switch Account</Text>
+          </TouchableOpacity>
 
           {/* NÚT SIGN OUT */}
           <TouchableOpacity style={styles.menuItem} onPress={handleSignOut}>
