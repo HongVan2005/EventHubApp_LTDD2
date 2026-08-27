@@ -1,7 +1,7 @@
 // ============================================================
 // ROOT NAVIGATOR - Stack điều hướng gốc của toàn bộ ứng dụng
 // Bao gồm: Splash -> Onboarding -> Auth -> Main (Drawer + Tabs)
-// và các màn hình con khác (chi tiết, mời bạn bè, chia sẻ...)
+// và các màn hình con khác (chi tiết, chỉnh sửa cá nhân, nhắn tin...)
 // ============================================================
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
@@ -16,11 +16,14 @@ import SignUpScreen from '../screens/SignUpScreen';
 import VerificationScreen from '../screens/VerificationScreen';
 import ResetPasswordScreen from '../screens/ResetPasswordScreen';
 import MainDrawer from './MainDrawer';
+import EventsScreen from '../screens/EventsScreen';
 import EventDetailsScreen from '../screens/EventDetailsScreen';
 import MapViewScreen from '../screens/MapViewScreen';
 import SearchScreen from '../screens/SearchScreen';
 import FilterScreen from '../screens/FilterScreen';
 import MyProfileScreen from '../screens/MyProfileScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
+import MessageScreen from '../screens/MessageScreen';
 import OrganizerProfileScreen from '../screens/OrganizerProfileScreen';
 import NotificationScreen from '../screens/NotificationScreen';
 import InviteFriendScreen from '../screens/InviteFriendScreen';
@@ -47,12 +50,18 @@ export default function RootNavigator() {
         {/* Khu vực chính của ứng dụng (Drawer + Bottom Tabs) */}
         <Stack.Screen name="MainDrawer" component={MainDrawer} />
 
+        {/* Màn hình Danh sách tất cả sự kiện */}
+        <Stack.Screen name="SeeAllEvents" component={EventsScreen} />
+        <Stack.Screen name="Events" component={EventsScreen} />
+
         {/* Các màn hình con điều hướng từ khu vực chính */}
         <Stack.Screen name="EventDetails" component={EventDetailsScreen} />
         <Stack.Screen name="MapView" component={MapViewScreen} />
         <Stack.Screen name="Search" component={SearchScreen} />
         <Stack.Screen name="Filter" component={FilterScreen} options={{ presentation: 'modal' }} />
         <Stack.Screen name="MyProfile" component={MyProfileScreen} />
+        <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+        <Stack.Screen name="Message" component={MessageScreen} />
         <Stack.Screen name="OrganizerProfile" component={OrganizerProfileScreen} />
         <Stack.Screen name="Notification" component={NotificationScreen} />
         <Stack.Screen name="InviteFriend" component={InviteFriendScreen} />

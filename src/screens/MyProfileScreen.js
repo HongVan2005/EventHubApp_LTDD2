@@ -1,17 +1,49 @@
 // ============================================================
 // 17. MY PROFILE - Hồ sơ cá nhân của người dùng hiện tại
 // ============================================================
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { currentUser, events } from '../data/mockData';
 import { colors, radius, fontSize, spacing } from '../theme/colors';
 
 export default function MyProfileScreen({ navigation }) {
+  const [profile, setProfile] = useState({
+    name: currentUser.name,
+    about: currentUser.about,
+    avatar: 'https://i.pravatar.cc/300?img=12',
+  });
+
+  // Tự động load dữ liệu mới từ AsyncStorage mỗi khi màn hình Profile được focus
+  useFocusEffect(
+    useCallback(() => {
+      const loadProfileData = async () => {
+        try {
+          const savedData = await AsyncStorage.getItem('user_profile');
+          if (savedData !== null) {
+            const data = JSON.parse(savedData);
+            setProfile({
+              name: data.name || currentUser.name,
+              about: data.bio || currentUser.about,
+              avatar: data.avatar || 'https://i.pravatar.cc/300?img=12',
+            });
+          }
+        } catch (error) {
+          console.log('Lỗi tải thông tin cá nhân:', error);
+        }
+      };
+
+      loadProfileData();
+    }, [])
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={{ paddingBottom: spacing.xl }}>
+        {/* HEADER BAR */}
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.roundBtn}>
             <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
@@ -22,9 +54,10 @@ export default function MyProfileScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
+        {/* PROFILE CARD */}
         <View style={styles.profileBox}>
-          <Image source={{ uri: currentUser.avatar }} style={styles.avatar} />
-          <Text style={styles.name}>{currentUser.name}</Text>
+          <Image source={{ uri: profile.avatar }} style={styles.avatar} />
+          <Text style={styles.name}>{profile.name}</Text>
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>{currentUser.followers}</Text>
@@ -36,16 +69,21 @@ export default function MyProfileScreen({ navigation }) {
               <Text style={styles.statLabel}>Following</Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.editBtn}>
+          <TouchableOpacity 
+            style={styles.editBtn} 
+            onPress={() => navigation.navigate('EditProfile')}
+          >
             <Text style={styles.editText}>Edit Profile</Text>
           </TouchableOpacity>
         </View>
 
+        {/* ABOUT ME SECTION */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About Me</Text>
-          <Text style={styles.aboutText}>{currentUser.about}</Text>
+          <Text style={styles.aboutText}>{profile.about}</Text>
         </View>
 
+        {/* INTERESTS SECTION */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Interest</Text>
           <View style={styles.interestRow}>
@@ -57,6 +95,7 @@ export default function MyProfileScreen({ navigation }) {
           </View>
         </View>
 
+        {/* MY EVENTS SECTION */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>My Events</Text>
           {events.slice(0, 2).map((ev) => (
