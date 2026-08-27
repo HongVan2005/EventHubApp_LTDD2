@@ -10,6 +10,8 @@ Toàn bộ mã nguồn có chú thích cơ bản bằng **tiếng Việt** để
 - npm (đi kèm Node.js)
 - Điện thoại cài ứng dụng **Expo Go** (tải trên App Store / Google Play) để quét mã QR chạy thử,
   hoặc máy ảo Android Studio / Xcode Simulator nếu muốn chạy trên máy tính.
+- Dự án dùng **Expo SDK 54**. Nếu app Expo Go trên điện thoại báo lệch phiên bản SDK, hãy cập nhật
+  Expo Go lên bản mới nhất từ App Store/Google Play (Expo Go luôn cần khớp đúng SDK của dự án).
 
 ## 2. Cài đặt
 
