@@ -1,75 +1,115 @@
-// ============================================================
-// 15 & 16. SEE ALL EVENTS / EMPTY EVENTS
-// Màn hình danh sách toàn bộ sự kiện, có 2 tab: Upcoming / Finished
-// Khi danh sách rỗng sẽ hiển thị trạng thái "Empty Events"
-// ============================================================
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// src/screens/EventsScreen.js
+import React, { useState, useContext } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import EventCard from '../components/EventCard';
-import AppButton from '../components/AppButton';
+import { ThemeContext } from '../context/ThemeContext';
 import { events } from '../data/mockData';
-import { colors, radius, fontSize, spacing } from '../theme/colors';
 
 export default function EventsScreen({ navigation }) {
-  const [tab, setTab] = useState('upcoming'); // 'upcoming' | 'finished'
+  const { themeColors, t } = useContext(ThemeContext);
+  const [activeTab, setActiveTab] = useState('upcoming');
 
-  // Tab "finished" chưa có dữ liệu mẫu -> minh hoạ trạng thái Empty Events
-  const data = tab === 'upcoming' ? events : [];
+  const filteredEvents = activeTab === 'upcoming' ? events : [];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+      {/* HEADER BAR ĐÃ ĐƯỢC CÂN CHỈNH KHOẢNG CÁCH CÂN ĐỐI */}
       <View style={styles.headerRow}>
-        <Text style={styles.headerTitle}>Events</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Filter')}>
-          <Ionicons name="options-outline" size={22} color={colors.textPrimary} />
+        <Text style={[styles.headerTitle, { color: themeColors.textPrimary }]}>{t('events')}</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Filter')} style={styles.filterIconButton}>
+          <Ionicons name="options-outline" size={22} color={themeColors.textPrimary} />
         </TouchableOpacity>
       </View>
 
-      {/* Chuyển tab để xem cả 2 trạng thái giao diện: có sự kiện / trống */}
-      <View style={styles.tabRow}>
-        <TouchableOpacity style={[styles.tabBtn, tab === 'upcoming' && styles.tabBtnActive]} onPress={() => setTab('upcoming')}>
-          <Text style={[styles.tabText, tab === 'upcoming' && styles.tabTextActive]}>UPCOMING</Text>
+      {/* TABS SWITCHER */}
+      <View style={[styles.tabBar, { backgroundColor: themeColors.surface }]}>
+        <TouchableOpacity
+          style={[styles.tabBtn, activeTab === 'upcoming' && styles.activeTabBtn]}
+          onPress={() => setActiveTab('upcoming')}
+        >
+          <Text style={[styles.tabText, activeTab === 'upcoming' ? styles.activeTabText : { color: themeColors.textSecondary }]}>
+            {t('upcoming')}
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.tabBtn, tab === 'finished' && styles.tabBtnActive]} onPress={() => setTab('finished')}>
-          <Text style={[styles.tabText, tab === 'finished' && styles.tabTextActive]}>FINISHED</Text>
+
+        <TouchableOpacity
+          style={[styles.tabBtn, activeTab === 'finished' && styles.activeTabBtn]}
+          onPress={() => setActiveTab('finished')}
+        >
+          <Text style={[styles.tabText, activeTab === 'finished' ? styles.activeTabText : { color: themeColors.textSecondary }]}>
+            {t('finished')}
+          </Text>
         </TouchableOpacity>
       </View>
 
-      {data.length === 0 ? (
-        // Trạng thái không có sự kiện nào (Empty Events)
-        <View style={styles.emptyBox}>
-          <Image source={{ uri: 'https://cdn-icons-png.flaticon.com/512/6134/6134065.png' }} style={styles.emptyImage} />
-          <Text style={styles.emptyTitle}>No Upcoming Event</Text>
-          <Text style={styles.emptySub}>Hiện chưa có sự kiện nào ở mục này, hãy khám phá thêm sự kiện mới nhé.</Text>
-          <AppButton title="EXPLORE EVENTS" onPress={() => setTab('upcoming')} style={{ marginTop: spacing.lg, width: '100%' }} />
-        </View>
-      ) : (
-        <FlatList
-          data={data}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: spacing.md }}
-          renderItem={({ item }) => (
-            <EventCard event={item} horizontal={false} onPress={() => navigation.navigate('EventDetails', { event: item })} />
-          )}
-        />
-      )}
+      {/* EVENT LIST */}
+      <ScrollView contentContainerStyle={styles.scroll}>
+        {filteredEvents.length > 0 ? (
+          filteredEvents.map((ev) => (
+            <TouchableOpacity
+              key={ev.id}
+              style={[styles.card, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}
+              onPress={() => navigation.navigate('EventDetails', { event: ev })}
+            >
+              <Image source={{ uri: ev.image }} style={styles.cardImg} />
+              <View style={styles.cardBody}>
+                <Text style={[styles.cardTitle, { color: themeColors.textPrimary }]}>{ev.title}</Text>
+                <Text style={styles.cardSub}>+20 {t('goingCount')}</Text>
+                <Text style={[styles.cardLocation, { color: themeColors.textSecondary }]}>📍 {ev.location}</Text>
+              </View>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <View style={styles.emptyBox}>
+            <Ionicons name="search-outline" size={80} color={themeColors.textSecondary} />
+            <Text style={[styles.emptyTitle, { color: themeColors.textPrimary }]}>
+              {t('noUpcomingEvents')}
+            </Text>
+            <Text style={[styles.emptySub, { color: themeColors.textSecondary }]}>
+              {t('noUpcomingDesc')}
+            </Text>
+            <TouchableOpacity style={styles.exploreBtn} onPress={() => setActiveTab('upcoming')}>
+              <Text style={styles.exploreText}>{t('exploreEvents')}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: spacing.md },
-  headerTitle: { fontSize: fontSize.xl, fontWeight: '800', color: colors.textPrimary },
-  tabRow: { flexDirection: 'row', marginHorizontal: spacing.md, backgroundColor: colors.card, borderRadius: radius.full, padding: 4, marginBottom: spacing.sm },
-  tabBtn: { flex: 1, paddingVertical: 10, borderRadius: radius.full, alignItems: 'center' },
-  tabBtnActive: { backgroundColor: colors.primary },
-  tabText: { color: colors.textSecondary, fontWeight: '700', fontSize: fontSize.xs },
-  tabTextActive: { color: colors.white },
-  emptyBox: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
-  emptyImage: { width: 120, height: 120, marginBottom: spacing.lg, opacity: 0.8 },
-  emptyTitle: { fontSize: fontSize.lg, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.xs },
-  emptySub: { color: colors.textSecondary, textAlign: 'center', lineHeight: 20 },
+  container: { flex: 1 },
+  headerRow: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    paddingHorizontal: 20, 
+    paddingVertical: 14 
+  },
+  headerTitle: { fontSize: 24, fontWeight: '800' },
+  filterIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabBar: { flexDirection: 'row', marginHorizontal: 16, borderRadius: 30, padding: 4, marginBottom: 16 },
+  tabBtn: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 25 },
+  activeTabBtn: { backgroundColor: '#5669FF' },
+  tabText: { fontWeight: '700', fontSize: 13 },
+  activeTabText: { color: '#FFFFFF' },
+  scroll: { paddingHorizontal: 16, paddingBottom: 20 },
+  card: { borderRadius: 16, borderWidth: 1, marginBottom: 16, overflow: 'hidden' },
+  cardImg: { width: '100%', height: 160 },
+  cardBody: { padding: 12 },
+  cardTitle: { fontSize: 16, fontWeight: '700' },
+  cardSub: { color: '#5669FF', fontSize: 12, marginTop: 4 },
+  cardLocation: { fontSize: 12, marginTop: 4 },
+  emptyBox: { alignItems: 'center', justifyContent: 'center', marginTop: 60, paddingHorizontal: 20 },
+  emptyTitle: { fontSize: 18, fontWeight: '800', marginTop: 16 },
+  emptySub: { textAlign: 'center', marginTop: 8, lineHeight: 20 },
+  exploreBtn: { backgroundColor: '#5669FF', paddingHorizontal: 24, paddingVertical: 14, borderRadius: 12, marginTop: 24 },
+  exploreText: { color: '#FFFFFF', fontWeight: '800' },
 });

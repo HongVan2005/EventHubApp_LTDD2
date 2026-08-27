@@ -9,14 +9,7 @@ import AppButton from '../components/AppButton';
 import { ThemeContext } from '../context/ThemeContext';
 
 export default function EditProfileScreen({ navigation }) {
-  const themeContext = useContext(ThemeContext);
-  const themeColors = themeContext?.themeColors || {
-    background: '#FFFFFF',
-    textPrimary: '#120D26',
-    textSecondary: '#747688',
-    border: '#E4E6EB',
-    primary: '#5669FF',
-  };
+  const { themeColors, t } = useContext(ThemeContext);
 
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
@@ -54,7 +47,7 @@ export default function EditProfileScreen({ navigation }) {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.4,
+      quality: 0.3,
       base64: true,
     });
 
@@ -67,19 +60,26 @@ export default function EditProfileScreen({ navigation }) {
   const handleSave = async () => {
     setLoading(true);
     try {
-      const profileData = { name, bio, email, avatar };
+      let targetEmail = email;
+      if (!targetEmail) {
+        const savedProfile = await AsyncStorage.getItem('user_profile');
+        if (savedProfile) {
+          const parsed = JSON.parse(savedProfile);
+          targetEmail = parsed.email || '';
+        }
+      }
 
-      // 1. Lưu thông tin tài khoản đang phiên đăng nhập
+      const profileData = { name, bio, email: targetEmail, avatar };
+
       await AsyncStorage.setItem('user_profile', JSON.stringify(profileData));
 
-      // 2. Cập nhật đồng bộ vào danh sách tất cả tài khoản
       const usersStr = await AsyncStorage.getItem('registered_users');
       if (usersStr) {
         let users = JSON.parse(usersStr);
         users = users.map((u) => {
           if (
-            (email && u.email && u.email.toLowerCase().trim() === email.toLowerCase().trim()) ||
-            (!email && u.name && u.name.toLowerCase().trim() === name.toLowerCase().trim())
+            (targetEmail && u.email && u.email.toLowerCase().trim() === targetEmail.toLowerCase().trim()) ||
+            (!targetEmail && u.name && u.name.toLowerCase().trim() === name.toLowerCase().trim())
           ) {
             return { ...u, name, bio, avatar };
           }
@@ -88,8 +88,8 @@ export default function EditProfileScreen({ navigation }) {
         await AsyncStorage.setItem('registered_users', JSON.stringify(users));
       }
 
-      Alert.alert('Thành công', 'Thông tin cá nhân đã được lưu vĩnh viễn!', [
-        { text: 'OK', onPress: () => navigation.goBack() }
+      Alert.alert('Thành công', 'Đã lưu thông tin cá nhân!', [
+        { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (error) {
       Alert.alert('Lỗi', 'Không thể lưu dữ liệu cá nhân.');
@@ -104,7 +104,7 @@ export default function EditProfileScreen({ navigation }) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={themeColors.textPrimary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: themeColors.textPrimary }]}>Edit Profile</Text>
+        <Text style={[styles.headerTitle, { color: themeColors.textPrimary }]}>{t('editProfile')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -121,19 +121,19 @@ export default function EditProfileScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <Text style={[styles.label, { color: themeColors.textPrimary }]}>Full Name</Text>
+        <Text style={[styles.label, { color: themeColors.textPrimary }]}>{t('fullName')}</Text>
         <AppInput icon="person-outline" value={name} onChangeText={setName} style={styles.field} />
 
-        <Text style={[styles.label, { color: themeColors.textPrimary }]}>Email</Text>
+        <Text style={[styles.label, { color: themeColors.textPrimary }]}>{t('email')}</Text>
         <AppInput icon="mail-outline" value={email} onChangeText={setEmail} keyboardType="email-address" style={styles.field} editable={false} />
 
-        <Text style={[styles.label, { color: themeColors.textPrimary }]}>About Me</Text>
+        <Text style={[styles.label, { color: themeColors.textPrimary }]}>{t('aboutMe')}</Text>
         <AppInput icon="information-circle-outline" value={bio} onChangeText={setBio} multiline style={styles.field} />
 
         {loading ? (
           <ActivityIndicator size="large" color={themeColors.primary} style={{ marginTop: 20 }} />
         ) : (
-          <AppButton title="SAVE CHANGES" onPress={handleSave} style={{ marginTop: 20 }} />
+          <AppButton title={t('saveChanges')} onPress={handleSave} style={{ marginTop: 20 }} />
         )}
       </ScrollView>
     </SafeAreaView>

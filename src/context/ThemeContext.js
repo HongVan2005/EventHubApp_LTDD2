@@ -1,11 +1,13 @@
 // src/context/ThemeContext.js
 import React, { createContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 import i18n from '../i18n/i18n';
 
 export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
+  const { t } = useTranslation();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [language, setLanguage] = useState('vi');
 
@@ -42,17 +44,19 @@ export const ThemeProvider = ({ children }) => {
     await AsyncStorage.setItem('app_language', langCode);
   };
 
+  // Hệ màu chuẩn áp dụng cho toàn bộ các màn hình trong app
   const themeColors = {
     background: isDarkMode ? '#121212' : '#FFFFFF',
     surface: isDarkMode ? '#1E1E1E' : '#F8F9FA',
     textPrimary: isDarkMode ? '#FFFFFF' : '#120D26',
-    textSecondary: isDarkMode ? '#A0A0A0' : '#747688',
+    textSecondary: isDarkMode ? '#AAAAAA' : '#747688',
     border: isDarkMode ? '#2C2C2C' : '#E4E6EB',
+    card: isDarkMode ? '#1E1E1E' : '#FFFFFF',
     primary: '#5669FF',
   };
 
   return (
-    <ThemeContext.Provider value={{ isDarkMode, toggleTheme, language, changeLanguage, themeColors }}>
+    <ThemeContext.Provider value={{ isDarkMode, toggleTheme, language, changeLanguage, themeColors, t }}>
       {children}
     </ThemeContext.Provider>
   );

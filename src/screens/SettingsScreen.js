@@ -2,7 +2,6 @@
 import React, { useContext } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, Switch, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
 import { ThemeContext } from '../context/ThemeContext';
 import ScreenHeader from '../components/ScreenHeader';
 
@@ -14,20 +13,20 @@ const languages = [
 ];
 
 export default function SettingsScreen({ navigation }) {
-  const { t } = useTranslation();
-  const { isDarkMode, toggleTheme, language, changeLanguage, themeColors } = useContext(ThemeContext);
+  const { isDarkMode, toggleTheme, language, changeLanguage, themeColors, t } = useContext(ThemeContext);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
-      <ScreenHeader title={t('settings')} onBack={() => navigation.goBack()} />
+      <ScreenHeader title={t('settings') || 'Settings'} onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        {/* DARK MODE SWITCH */}
+        {/* ĐỔI GIAO DIỆN SÁNG / TỐI */}
+        <Text style={[styles.groupLabel, { color: themeColors.textSecondary }]}>{t('theme') || 'Theme'}</Text>
         <View style={[styles.section, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
           <View style={styles.row}>
             <View style={styles.rowLeft}>
               <Ionicons name={isDarkMode ? 'moon' : 'sunny'} size={24} color={themeColors.primary} />
-              <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>{t('darkMode')}</Text>
+              <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>{t('darkMode') || 'Dark Mode'}</Text>
             </View>
             <Switch
               value={isDarkMode}
@@ -38,8 +37,8 @@ export default function SettingsScreen({ navigation }) {
           </View>
         </View>
 
-        {/* LANGUAGE SELECTION */}
-        <Text style={[styles.groupLabel, { color: themeColors.textSecondary }]}>{t('language')}</Text>
+        {/* CHỌN NGÔN NGỮ */}
+        <Text style={[styles.groupLabel, { color: themeColors.textSecondary }]}>{t('language') || 'Language'}</Text>
         <View style={[styles.section, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
           {languages.map((lang, index) => {
             const isSelected = language === lang.code;
@@ -66,7 +65,7 @@ export default function SettingsScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   scroll: { padding: 16 },
-  groupLabel: { fontSize: 14, fontWeight: '700', marginTop: 16, marginBottom: 8, textTransform: 'uppercase' },
+  groupLabel: { fontSize: 13, fontWeight: '700', marginTop: 16, marginBottom: 8, textTransform: 'uppercase' },
   section: { borderRadius: 12, borderWidth: 1, paddingHorizontal: 16, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14 },
   rowLeft: { flexDirection: 'row', alignItems: 'center' },

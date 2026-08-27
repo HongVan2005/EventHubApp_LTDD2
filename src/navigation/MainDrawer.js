@@ -28,14 +28,14 @@ function CustomDrawerContent(props) {
   });
 
   const drawerItems = [
-    { id: '1', label: t('profile') || 'My Profile', icon: 'person-outline', screen: 'MyProfile' },
-    { id: '2', label: t('messages') || 'Message', icon: 'chatbubble-outline', screen: 'Message' },
-    { id: '3', label: 'Calendar', icon: 'calendar-outline', screen: 'SeeAllEvents' },
-    { id: '4', label: 'Bookmark', icon: 'bookmark-outline', screen: 'Events' },
-    { id: '5', label: t('accountManager') || 'Account Manager', icon: 'people-outline', screen: 'AccountManager' },
-    { id: '6', label: 'Contact Us', icon: 'call-outline', screen: 'InviteFriend' },
-    { id: '7', label: t('settings') || 'Settings', icon: 'settings-outline', screen: 'Settings' },
-    { id: '8', label: 'Help & FAQ', icon: 'help-circle-outline', screen: 'Notification' },
+    { id: '1', label: t('profile'), icon: 'person-outline', screen: 'MyProfile' },
+    { id: '2', label: t('messages'), icon: 'chatbubble-outline', screen: 'Message' },
+    { id: '3', label: t('calendar'), icon: 'calendar-outline', screen: 'SeeAllEvents' },
+    { id: '4', label: t('bookmark'), icon: 'bookmark-outline', screen: 'Events' },
+    { id: '5', label: t('accountManager'), icon: 'people-outline', screen: 'AccountManager' },
+    { id: '6', label: t('contactUs'), icon: 'call-outline', screen: 'InviteFriend' },
+    { id: '7', label: t('settings'), icon: 'settings-outline', screen: 'Settings' },
+    { id: '8', label: t('helpFaq'), icon: 'help-circle-outline', screen: 'Notification' },
   ];
 
   useEffect(() => {
@@ -79,10 +79,10 @@ function CustomDrawerContent(props) {
   }, [props.navigation]);
 
   const handleSignOut = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to log out?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('signOut'), 'Bạn có chắc chắn muốn đăng xuất không?', [
+      { text: 'Hủy', style: 'cancel' },
       { 
-        text: 'Sign Out', 
+        text: t('signOut'), 
         style: 'destructive',
         onPress: async () => {
           await AsyncStorage.removeItem('userToken');
@@ -95,6 +95,7 @@ function CustomDrawerContent(props) {
   return (
     <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1, backgroundColor: themeColors.background }}>
       <View style={styles.container}>
+        {/* HEADER USER */}
         <TouchableOpacity 
           style={styles.profileHeader} 
           onPress={() => {
@@ -104,9 +105,12 @@ function CustomDrawerContent(props) {
         >
           <Image source={{ uri: user.avatar }} style={styles.avatar} />
           <Text style={[styles.userName, { color: themeColors.textPrimary }]}>{user.name}</Text>
-          <Text style={[styles.userSub, { color: themeColors.textSecondary }]}>120 Followers · 260 Following</Text>
+          <Text style={[styles.userSub, { color: themeColors.textSecondary }]}>
+            120 {t('followers')} · 260 {t('following')}
+          </Text>
         </TouchableOpacity>
 
+        {/* DANH SÁCH MENU */}
         <View style={styles.menuList}>
           {drawerItems.map((item) => (
             <TouchableOpacity
@@ -122,6 +126,7 @@ function CustomDrawerContent(props) {
             </TouchableOpacity>
           ))}
 
+          {/* CHUYỂN ĐỔI TÀI KHOẢN */}
           <TouchableOpacity 
             style={styles.menuItem} 
             onPress={() => {
@@ -130,12 +135,13 @@ function CustomDrawerContent(props) {
             }}
           >
             <Ionicons name="swap-horizontal-outline" size={22} color="#5669FF" style={styles.icon} />
-            <Text style={[styles.menuLabel, { color: '#5669FF' }]}>{t('switchAccount') || 'Switch Account'}</Text>
+            <Text style={[styles.menuLabel, { color: '#5669FF' }]}>{t('switchAccount')}</Text>
           </TouchableOpacity>
 
+          {/* SIGN OUT */}
           <TouchableOpacity style={styles.menuItem} onPress={handleSignOut}>
             <Ionicons name="log-out-outline" size={22} color="#F56B3F" style={styles.icon} />
-            <Text style={[styles.menuLabel, { color: '#F56B3F' }]}>{t('signOut') || 'Sign Out'}</Text>
+            <Text style={[styles.menuLabel, { color: '#F56B3F' }]}>{t('signOut')}</Text>
           </TouchableOpacity>
         </View>
       </View>

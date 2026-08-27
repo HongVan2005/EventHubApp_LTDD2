@@ -1,85 +1,84 @@
-// ============================================================
-// 23. INVITE FRIEND - Mời bạn bè tham gia sự kiện
-// ============================================================
-import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, TextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// src/screens/InviteFriendScreen.js
+import React, { useContext, useState } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, FlatList, Image, TouchableOpacity, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import AppButton from '../components/AppButton';
+import { ThemeContext } from '../context/ThemeContext';
 import { friends } from '../data/mockData';
-import { colors, radius, fontSize, spacing } from '../theme/colors';
 
 export default function InviteFriendScreen({ navigation }) {
-  const [selected, setSelected] = useState([]);
-  const [query, setQuery] = useState('');
+  const { themeColors, t } = useContext(ThemeContext);
+  const [selectedFriends, setSelectedFriends] = useState({});
 
   const toggleSelect = (id) => {
-    setSelected((prev) => (prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]));
+    setSelectedFriends((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const filteredFriends = friends.filter((f) => f.name.toLowerCase().includes(query.toLowerCase()));
+  const count = Object.values(selectedFriends).filter(Boolean).length;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.roundBtn}>
-          <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.roundBtn, { backgroundColor: themeColors.surface, borderColor: themeColors.border, borderWidth: 1 }]}>
+          <Ionicons name="chevron-back" size={22} color={themeColors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Invite Friend</Text>
-        <View style={styles.roundBtn} />
+        <Text style={[styles.headerTitle, { color: themeColors.textPrimary }]}>{t('inviteFriend')}</Text>
+        <View style={{ width: 40 }} />
       </View>
 
-      <View style={styles.searchBox}>
-        <Ionicons name="search" size={18} color={colors.textSecondary} />
-        <TextInput
-          style={styles.input}
-          placeholder="Search friend..."
-          placeholderTextColor={colors.textPlaceholder}
-          value={query}
-          onChangeText={setQuery}
-        />
+      <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
+        <View style={[styles.searchBox, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
+          <Ionicons name="search-outline" size={20} color={themeColors.textSecondary} />
+          <TextInput
+            placeholder={t('searchFriend')}
+            placeholderTextColor={themeColors.textSecondary}
+            style={[styles.searchInput, { color: themeColors.textPrimary }]}
+          />
+        </View>
       </View>
 
       <FlatList
-        data={filteredFriends}
+        data={friends}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingHorizontal: spacing.md }}
+        contentContainerStyle={{ paddingHorizontal: 16 }}
         renderItem={({ item }) => {
-          const isSelected = selected.includes(item.id);
+          const isSelected = selectedFriends[item.id];
           return (
-            <TouchableOpacity style={styles.friendRow} onPress={() => toggleSelect(item.id)}>
+            <TouchableOpacity
+              style={[styles.friendCard, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}
+              onPress={() => toggleSelect(item.id)}
+            >
               <Image source={{ uri: item.avatar }} style={styles.avatar} />
-              <Text style={styles.friendName}>{item.name}</Text>
-              <View style={[styles.checkbox, isSelected && styles.checkboxActive]}>
-                {isSelected && <Ionicons name="checkmark" size={14} color={colors.white} />}
+              <Text style={[styles.friendName, { color: themeColors.textPrimary, flex: 1, marginLeft: 12 }]}>{item.name}</Text>
+              <View style={[styles.checkbox, isSelected && styles.checkedBox]}>
+                {isSelected && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
               </View>
             </TouchableOpacity>
           );
         }}
       />
 
-      <View style={styles.footer}>
-        <AppButton
-          title={`INVITE (${selected.length})`}
-          onPress={() => navigation.navigate('Share')}
-          disabled={selected.length === 0}
-        />
+      <View style={[styles.footer, { backgroundColor: themeColors.background, borderTopColor: themeColors.border }]}>
+        <TouchableOpacity style={styles.inviteBtn} onPress={() => navigation.goBack()}>
+          <Text style={styles.inviteText}>{t('inviteAction')} ({count})</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
-  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: spacing.md },
-  roundBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: fontSize.lg, fontWeight: '800', color: colors.textPrimary },
-  searchBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.background, marginHorizontal: spacing.md, borderRadius: radius.lg, height: 46, paddingHorizontal: spacing.md, marginBottom: spacing.sm },
-  input: { flex: 1, marginLeft: spacing.sm, color: colors.textPrimary },
-  friendRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10 },
-  avatar: { width: 46, height: 46, borderRadius: 23 },
-  friendName: { flex: 1, marginLeft: spacing.sm, fontSize: fontSize.md, color: colors.textPrimary, fontWeight: '600' },
-  checkbox: { width: 24, height: 24, borderRadius: 12, borderWidth: 1.5, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
-  checkboxActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  footer: { padding: spacing.md },
+  container: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
+  roundBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontSize: 18, fontWeight: '700' },
+  searchBox: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, height: 44, borderRadius: 12, borderWidth: 1 },
+  searchInput: { flex: 1, marginLeft: 8, fontSize: 14 },
+  friendCard: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 12, marginBottom: 12, borderWidth: 1 },
+  avatar: { width: 48, height: 48, borderRadius: 24 },
+  friendName: { fontSize: 15, fontWeight: '700' },
+  checkbox: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: '#5669FF', alignItems: 'center', justifyContent: 'center' },
+  checkedBox: { backgroundColor: '#5669FF' },
+  footer: { padding: 16, borderTopWidth: 1 },
+  inviteBtn: { backgroundColor: '#5669FF', paddingVertical: 16, borderRadius: 14, alignItems: 'center' },
+  inviteText: { color: '#FFFFFF', fontWeight: '800', fontSize: 16 },
 });

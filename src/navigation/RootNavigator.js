@@ -1,10 +1,6 @@
-// ============================================================
-// ROOT NAVIGATOR - Stack điều hướng gốc của toàn bộ ứng dụng
-// Bao gồm: Splash -> Onboarding -> Auth -> Main (Drawer + Tabs)
-// và các màn hình con khác (chi tiết, chỉnh sửa cá nhân, nhắn tin, quản lý tài khoản, cài đặt...)
-// ============================================================
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+// src/navigation/RootNavigator.js
+import React, { useContext } from 'react';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import SplashScreen from '../screens/SplashScreen';
@@ -31,32 +27,34 @@ import NotificationScreen from '../screens/NotificationScreen';
 import InviteFriendScreen from '../screens/InviteFriendScreen';
 import ShareScreen from '../screens/ShareScreen';
 
+import { ThemeContext } from '../context/ThemeContext';
+
 const Stack = createNativeStackNavigator();
 
 export default function RootNavigator() {
+  const { isDarkMode } = useContext(ThemeContext);
+
+  // Chọn Theme tương ứng cho NavigationContainer
+  const navigationTheme = isDarkMode ? DarkTheme : DefaultTheme;
+
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navigationTheme}>
       <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
-        {/* Nhóm màn hình mở đầu */}
         <Stack.Screen name="Splash" component={SplashScreen} />
         <Stack.Screen name="Onboarding1" component={Onboarding1Screen} />
         <Stack.Screen name="Onboarding2" component={Onboarding2Screen} />
         <Stack.Screen name="Onboarding3" component={Onboarding3Screen} />
 
-        {/* Nhóm màn hình xác thực người dùng */}
         <Stack.Screen name="SignIn" component={SignInScreen} />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="Verification" component={VerificationScreen} />
         <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
 
-        {/* Khu vực chính của ứng dụng (Drawer + Bottom Tabs) */}
         <Stack.Screen name="MainDrawer" component={MainDrawer} />
 
-        {/* Màn hình Danh sách tất cả sự kiện */}
         <Stack.Screen name="SeeAllEvents" component={EventsScreen} />
         <Stack.Screen name="Events" component={EventsScreen} />
 
-        {/* Các màn hình con điều hướng từ khu vực chính */}
         <Stack.Screen name="EventDetails" component={EventDetailsScreen} />
         <Stack.Screen name="MapView" component={MapViewScreen} />
         <Stack.Screen name="Search" component={SearchScreen} />

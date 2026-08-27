@@ -1,113 +1,145 @@
-// ============================================================
-// 14. FILTER - Bộ lọc tìm kiếm sự kiện (thời gian, danh mục, giá, vị trí)
-// ============================================================
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// src/screens/FilterScreen.js
+import React, { useContext, useState } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import AppButton from '../components/AppButton';
-import { categories } from '../data/mockData';
-import { colors, radius, fontSize, spacing } from '../theme/colors';
-
-const timeOptions = ['Today', 'Tomorrow', 'This Week', 'This Month'];
+import { ThemeContext } from '../context/ThemeContext';
 
 export default function FilterScreen({ navigation }) {
+  const { themeColors, t } = useContext(ThemeContext);
   const [selectedTime, setSelectedTime] = useState('Today');
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [price, setPrice] = useState(50); // Giá demo (đơn vị $), tối đa 150
+  const [selectedCat, setSelectedCat] = useState('Sports');
 
-  // Bật/tắt chọn danh mục
-  const toggleCategory = (id) => {
-    setSelectedCategories((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
-  };
+  const curr = t('currency'); // Tự động lấy ký hiệu tiền tệ tương ứng ($ hoặc đ)
+  const priceDisplay = curr === 'đ' ? '0đ - 500.000đ' : '$0 - $50';
+
+  const timeOptions = [
+    { key: 'Today', label: t('today') },
+    { key: 'Tomorrow', label: t('tomorrow') },
+    { key: 'This Week', label: t('thisWeek') },
+    { key: 'This Month', label: t('thisMonth') },
+  ];
+
+  const catOptions = [
+    { key: 'Sports', label: t('sports') },
+    { key: 'Music', label: t('music') },
+    { key: 'Food', label: t('food') },
+    { key: 'Art', label: t('art') },
+  ];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.roundBtn}>
-          <Ionicons name="close" size={22} color={colors.textPrimary} />
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+      {/* HEADER */}
+      <View style={styles.header}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          style={[styles.roundBtn, { backgroundColor: themeColors.surface, borderColor: themeColors.border, borderWidth: 1 }]}
+        >
+          <Ionicons name="close-outline" size={24} color={themeColors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Filter</Text>
-        <View style={styles.roundBtn} />
+        <Text style={[styles.headerTitle, { color: themeColors.textPrimary }]}>{t('filter')}</Text>
+        <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: spacing.md }}>
-        <Text style={styles.sectionTitle}>Time & Date</Text>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        {/* TIME & DATE */}
+        <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>{t('timeDate')}</Text>
         <View style={styles.chipRow}>
-          {timeOptions.map((t) => (
-            <TouchableOpacity
-              key={t}
-              style={[styles.chip, selectedTime === t && styles.chipActive]}
-              onPress={() => setSelectedTime(t)}
-            >
-              <Text style={[styles.chipText, selectedTime === t && styles.chipTextActive]}>{t}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <Text style={styles.sectionTitle}>Category</Text>
-        <View style={styles.chipRow}>
-          {categories.map((c) => {
-            const active = selectedCategories.includes(c.id);
+          {timeOptions.map((time) => {
+            const isSelected = selectedTime === time.key;
             return (
               <TouchableOpacity
-                key={c.id}
-                style={[styles.chip, active && { backgroundColor: c.color, borderColor: c.color }]}
-                onPress={() => toggleCategory(c.id)}
+                key={time.key}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: isSelected ? '#5669FF' : themeColors.surface,
+                    borderColor: isSelected ? '#5669FF' : themeColors.border,
+                  },
+                ]}
+                onPress={() => setSelectedTime(time.key)}
               >
-                <Text style={[styles.chipText, active && styles.chipTextActive]}>{c.name}</Text>
+                <Text style={{ color: isSelected ? '#FFFFFF' : themeColors.textPrimary, fontWeight: '600' }}>
+                  {time.label}
+                </Text>
               </TouchableOpacity>
             );
           })}
         </View>
 
-        <Text style={styles.sectionTitle}>Location</Text>
-        <View style={styles.locationBox}>
-          <Ionicons name="location-outline" size={18} color={colors.primary} />
-          <Text style={styles.locationText}>New York, USA</Text>
+        {/* CATEGORY */}
+        <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>{t('category')}</Text>
+        <View style={styles.chipRow}>
+          {catOptions.map((cat) => {
+            const isSelected = selectedCat === cat.key;
+            return (
+              <TouchableOpacity
+                key={cat.key}
+                style={[
+                  styles.chip,
+                  {
+                    backgroundColor: isSelected ? '#5669FF' : themeColors.surface,
+                    borderColor: isSelected ? '#5669FF' : themeColors.border,
+                  },
+                ]}
+                onPress={() => setSelectedCat(cat.key)}
+              >
+                <Text style={{ color: isSelected ? '#FFFFFF' : themeColors.textPrimary, fontWeight: '600' }}>
+                  {cat.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
-        <Text style={styles.sectionTitle}>Price Range: $0 - ${price}</Text>
-        <View style={styles.priceRow}>
-          <TouchableOpacity style={styles.priceBtn} onPress={() => setPrice((p) => Math.max(0, p - 10))}>
-            <Ionicons name="remove" size={18} color={colors.white} />
-          </TouchableOpacity>
-          <View style={styles.priceTrack}>
-            <View style={[styles.priceFill, { width: `${(price / 150) * 100}%` }]} />
-          </View>
-          <TouchableOpacity style={styles.priceBtn} onPress={() => setPrice((p) => Math.min(150, p + 10))}>
-            <Ionicons name="add" size={18} color={colors.white} />
-          </TouchableOpacity>
+        {/* LOCATION */}
+        <Text style={[styles.sectionTitle, { color: themeColors.textPrimary }]}>{t('location')}</Text>
+        <View style={[styles.locationBox, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
+          <Ionicons name="location-outline" size={20} color="#5669FF" />
+          <Text style={[styles.locationText, { color: themeColors.textPrimary }]}>Da Nang, Vietnam</Text>
+        </View>
+
+        {/* PRICE RANGE */}
+        <Text style={[styles.sectionTitle, { color: themeColors.textPrimary, marginTop: 16 }]}>
+          {t('priceRange')}: {priceDisplay}
+        </Text>
+        <View style={[styles.sliderTrack, { backgroundColor: themeColors.border }]}>
+          <View style={[styles.sliderFill, { backgroundColor: '#5669FF' }]} />
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
-        <TouchableOpacity onPress={() => { setSelectedCategories([]); setSelectedTime('Today'); setPrice(50); }}>
-          <Text style={styles.resetText}>RESET</Text>
+      {/* FOOTER BUTTONS */}
+      <View style={[styles.footer, { backgroundColor: themeColors.background, borderTopColor: themeColors.border }]}>
+        <TouchableOpacity 
+          style={[styles.resetBtn, { borderColor: themeColors.border, backgroundColor: themeColors.surface }]} 
+          onPress={() => { setSelectedTime('Today'); setSelectedCat('Sports'); }}
+        >
+          <Text style={[styles.resetText, { color: themeColors.textSecondary }]}>{t('reset')}</Text>
         </TouchableOpacity>
-        <AppButton title="APPLY" style={{ flex: 1, marginLeft: spacing.md }} onPress={() => navigation.goBack()} />
+
+        <TouchableOpacity style={styles.applyBtn} onPress={() => navigation.goBack()}>
+          <Text style={styles.applyText}>{t('apply')}</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
-  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: spacing.md },
-  roundBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: fontSize.lg, fontWeight: '800', color: colors.textPrimary },
-  sectionTitle: { fontSize: fontSize.md, fontWeight: '700', color: colors.textPrimary, marginTop: spacing.lg, marginBottom: spacing.sm },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap' },
-  chip: { borderWidth: 1, borderColor: colors.border, borderRadius: radius.full, paddingHorizontal: spacing.md, paddingVertical: 8, marginRight: spacing.sm, marginBottom: spacing.sm },
-  chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  chipText: { color: colors.textPrimary, fontSize: fontSize.sm, fontWeight: '600' },
-  chipTextActive: { color: colors.white },
-  locationBox: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, padding: spacing.md },
-  locationText: { marginLeft: spacing.sm, color: colors.textPrimary },
-  priceRow: { flexDirection: 'row', alignItems: 'center' },
-  priceBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  priceTrack: { flex: 1, height: 6, backgroundColor: colors.border, borderRadius: 3, marginHorizontal: spacing.sm, overflow: 'hidden' },
-  priceFill: { height: 6, backgroundColor: colors.primary },
-  footer: { flexDirection: 'row', alignItems: 'center', padding: spacing.md, borderTopWidth: 1, borderTopColor: colors.border },
-  resetText: { color: colors.textSecondary, fontWeight: '700' },
+  container: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 },
+  roundBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  headerTitle: { fontSize: 18, fontWeight: '700' },
+  scroll: { padding: 16 },
+  sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 12 },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 20 },
+  chip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, borderWidth: 1, marginRight: 8, marginBottom: 8 },
+  locationBox: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, borderWidth: 1 },
+  locationText: { marginLeft: 10, fontSize: 15, fontWeight: '600' },
+  sliderTrack: { height: 6, borderRadius: 3, marginTop: 12, marginBottom: 20, overflow: 'hidden' },
+  sliderFill: { width: '60%', height: '100%' },
+  footer: { flexDirection: 'row', padding: 16, borderTopWidth: 1, alignItems: 'center' },
+  resetBtn: { paddingVertical: 14, paddingHorizontal: 20, borderRadius: 12, borderWidth: 1, marginRight: 12 },
+  resetText: { fontWeight: '700', fontSize: 14 },
+  applyBtn: { flex: 1, backgroundColor: '#5669FF', paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
+  applyText: { color: '#FFFFFF', fontWeight: '800', fontSize: 15 },
 });

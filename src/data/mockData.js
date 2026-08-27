@@ -15,9 +15,9 @@ export const categories = [
 export const events = [
   {
     id: 'e1',
-    title: 'International Band Music Concert',
-    date: '10 June',
-    location: '36 Guild Street London, UK',
+    title: 'Hòa nhạc Ban nhạc Quốc tế',
+    date: '10 Tháng 6',
+    location: 'Số 36 Đường Phố Chính, Đà Nẵng',
     image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600',
     going: 20,
     price: 50,
@@ -27,9 +27,9 @@ export const events = [
   },
   {
     id: 'e2',
-    title: 'Jo Malone London Perfume Party',
-    date: '10 June',
-    location: 'Radius Gallery, USA',
+    title: 'Tiệc Nước hoa Jo Malone London',
+    date: '10 Tháng 6',
+    location: 'Phòng trưng bày Radius, TP.HCM',
     image: 'https://images.unsplash.com/photo-1521337581100-8ca9a73a5f79?w=600',
     going: 24,
     price: 30,
@@ -39,9 +39,9 @@ export const events = [
   },
   {
     id: 'e3',
-    title: "Women's Leadership Conference",
-    date: '15 June',
-    location: 'Downtown Conference Hall',
+    title: 'Hội nghị Lãnh đạo Nữ giới',
+    date: '15 Tháng 6',
+    location: 'Trung tâm Hội nghị Quốc gia',
     image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600',
     going: 45,
     price: 0,
@@ -51,9 +51,9 @@ export const events = [
   },
   {
     id: 'e4',
-    title: 'Collectibly Pop Life And Art',
-    date: '18 June',
-    location: 'City Art Museum',
+    title: 'Triển lãm Nghệ thuật Đương đại',
+    date: '18 Tháng 6',
+    location: 'Bảo tàng Mỹ thuật Thành phố',
     image: 'https://images.unsplash.com/photo-1531058020387-3be344556be6?w=600',
     going: 12,
     price: 15,
@@ -63,9 +63,9 @@ export const events = [
   },
   {
     id: 'e5',
-    title: 'International Kids Music Festival',
-    date: '22 June',
-    location: 'Central Park, USA',
+    title: 'Ngày hội Âm nhạc Thiếu nhi Quốc tế',
+    date: '22 Tháng 6',
+    location: 'Công viên Biển Đông, Đà Nẵng',
     image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=600',
     going: 8,
     price: 0,
@@ -115,7 +115,7 @@ export const friends = [
 // Thông tin người dùng hiện tại (demo)
 export const currentUser = {
   id: 'u1',
-  name: 'Ashfak Sayem',
+  name: 'Nguyễn Thị Hồng Vân',
   avatar: 'https://i.pravatar.cc/200?img=13',
   followers: 120,
   following: 260,
@@ -146,7 +146,7 @@ export const organizer = {
       name: 'Angelina Zoly',
       avatar: 'https://i.pravatar.cc/100?img=25',
       rating: 4,
-      comment: "Không gian đẹp, nhân viên hỗ trợ nhiệt tình.",
+      comment: 'Không gian đẹp, nhân viên hỗ trợ nhiệt tình.',
     },
   ],
 };

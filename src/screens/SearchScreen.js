@@ -1,63 +1,73 @@
-// ============================================================
-// 13. SEARCH (White Bar) - Tìm kiếm sự kiện
-// ============================================================
-import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// src/screens/SearchScreen.js
+import React, { useState, useContext } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, TextInput, FlatList, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import EventCard from '../components/EventCard';
+import { ThemeContext } from '../context/ThemeContext';
 import { events } from '../data/mockData';
-import { colors, radius, fontSize, spacing } from '../theme/colors';
 
 export default function SearchScreen({ navigation }) {
+  const { themeColors, t } = useContext(ThemeContext);
   const [query, setQuery] = useState('');
 
-  // Lọc sự kiện theo từ khoá nhập vào (không phân biệt hoa thường)
-  const results = useMemo(() => {
-    if (!query.trim()) return events;
-    return events.filter((e) => e.title.toLowerCase().includes(query.toLowerCase()));
-  }, [query]);
+  const filteredEvents = events.filter((e) =>
+    e.title.toLowerCase().includes(query.toLowerCase()) || e.location.toLowerCase().includes(query.toLowerCase())
+  );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.headerRow}>
-        <TouchableOpacity style={styles.roundBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={22} color={colors.textPrimary} />
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Ionicons name="arrow-back" size={24} color={themeColors.textPrimary} />
         </TouchableOpacity>
-        <View style={styles.searchBox}>
-          <Ionicons name="search" size={18} color={colors.textSecondary} />
+        <View style={[styles.searchBox, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
+          <Ionicons name="search-outline" size={20} color={themeColors.textSecondary} />
           <TextInput
-            style={styles.input}
-            placeholder="Search..."
-            placeholderTextColor={colors.textPlaceholder}
+            placeholder={t('searchEvent')}
+            placeholderTextColor={themeColors.textSecondary}
             value={query}
             onChangeText={setQuery}
+            style={[styles.input, { color: themeColors.textPrimary }]}
             autoFocus
           />
         </View>
-        <TouchableOpacity style={styles.roundBtn} onPress={() => navigation.navigate('Filter')}>
-          <Ionicons name="options-outline" size={20} color={colors.textPrimary} />
-        </TouchableOpacity>
       </View>
 
       <FlatList
-        data={results}
+        data={filteredEvents}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: spacing.md }}
-        ListEmptyComponent={<Text style={styles.emptyText}>Không tìm thấy sự kiện phù hợp</Text>}
+        contentContainerStyle={{ padding: 16 }}
         renderItem={({ item }) => (
-          <EventCard event={item} horizontal={false} onPress={() => navigation.navigate('EventDetails', { event: item })} />
+          <TouchableOpacity
+            style={[styles.card, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}
+            onPress={() => navigation.navigate('EventDetails', { event: item })}
+          >
+            <Image source={{ uri: item.image }} style={styles.cardImg} />
+            <View style={styles.cardBody}>
+              <Text style={[styles.cardTitle, { color: themeColors.textPrimary }]}>{item.title}</Text>
+              <Text style={[styles.cardSub, { color: themeColors.textSecondary }]}>📍 {item.location}</Text>
+            </View>
+          </TouchableOpacity>
         )}
+        ListEmptyComponent={
+          <View style={styles.emptyBox}>
+            <Text style={{ color: themeColors.textSecondary }}>{t('noResults')}</Text>
+          </View>
+        }
       />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  headerRow: { flexDirection: 'row', alignItems: 'center', padding: spacing.md },
-  roundBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
-  searchBox: { flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, height: 44, borderRadius: radius.lg, paddingHorizontal: spacing.md, marginHorizontal: spacing.sm, borderWidth: 1, borderColor: colors.border },
-  input: { flex: 1, marginLeft: spacing.sm, color: colors.textPrimary, fontSize: fontSize.sm },
-  emptyText: { textAlign: 'center', color: colors.textSecondary, marginTop: spacing.xl },
+  container: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', padding: 16 },
+  backBtn: { marginRight: 12 },
+  searchBox: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, height: 44, borderRadius: 12, borderWidth: 1 },
+  input: { flex: 1, marginLeft: 8, fontSize: 14 },
+  card: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 12, marginBottom: 12, borderWidth: 1 },
+  cardImg: { width: 60, height: 60, borderRadius: 8 },
+  cardBody: { marginLeft: 12, flex: 1 },
+  cardTitle: { fontSize: 15, fontWeight: '700' },
+  cardSub: { fontSize: 12, marginTop: 4 },
+  emptyBox: { alignItems: 'center', marginTop: 40 },
 });

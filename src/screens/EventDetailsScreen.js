@@ -1,100 +1,109 @@
-// ============================================================
-// 11. EVENT DETAILS - Chi tiết một sự kiện cụ thể
-// ============================================================
-import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// src/screens/EventDetailsScreen.js
+import React, { useContext } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { events as allEvents } from '../data/mockData';
-import AppButton from '../components/AppButton';
-import { colors, radius, fontSize, spacing } from '../theme/colors';
+import { ThemeContext } from '../context/ThemeContext';
 
 export default function EventDetailsScreen({ route, navigation }) {
-  const event = route.params?.event || allEvents[0];
-  const [saved, setSaved] = useState(false);
+  const { themeColors, t } = useContext(ThemeContext);
+  const { event } = route.params || {};
+
+  if (!event) return null;
 
   return (
-    <View style={styles.container}>
-      <View>
-        <Image source={{ uri: event.image }} style={styles.cover} />
-        <SafeAreaView style={styles.headerOverlay}>
-          <TouchableOpacity style={styles.roundBtn} onPress={() => navigation.goBack()}>
-            <Ionicons name="chevron-back" size={22} color={colors.white} />
-          </TouchableOpacity>
-          <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity style={[styles.roundBtn, { marginRight: spacing.sm }]} onPress={() => navigation.navigate('Share', { event })}>
-              <Ionicons name="share-social-outline" size={20} color={colors.white} />
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 30 }}>
+        <View style={styles.imageContainer}>
+          <Image source={{ uri: event.image }} style={styles.bannerImg} />
+          <View style={styles.topActions}>
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.circleBtn}>
+              <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.roundBtn} onPress={() => setSaved(!saved)}>
-              <Ionicons name={saved ? 'bookmark' : 'bookmark-outline'} size={20} color={colors.white} />
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row' }}>
+              <TouchableOpacity onPress={() => navigation.navigate('ShareEvent', { event })} style={[styles.circleBtn, { marginRight: 10 }]}>
+                <Ionicons name="share-social-outline" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.circleBtn}>
+                <Ionicons name="bookmark-outline" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
           </View>
-        </SafeAreaView>
-      </View>
-
-      <ScrollView style={styles.body} contentContainerStyle={{ padding: spacing.lg, paddingBottom: 120 }}>
-        <Text style={styles.date}>{event.date}, 2026 · 20:00</Text>
-        <Text style={styles.title}>{event.title}</Text>
-
-        <TouchableOpacity style={styles.organizerRow} onPress={() => navigation.navigate('OrganizerProfile')}>
-          <Image source={{ uri: 'https://i.pravatar.cc/100?img=13' }} style={styles.organizerAvatar} />
-          <View style={{ marginLeft: spacing.sm, flex: 1 }}>
-            <Text style={styles.organizerName}>{event.organizer}</Text>
-            <Text style={styles.organizerLabel}>Organizer</Text>
-          </View>
-          <View style={styles.followBtn}>
-            <Text style={styles.followText}>Follow</Text>
-          </View>
-        </TouchableOpacity>
-
-        <View style={styles.infoRow}>
-          <Ionicons name="location-outline" size={18} color={colors.primary} />
-          <Text style={styles.infoText}>{event.location}</Text>
-        </View>
-        <TouchableOpacity style={styles.infoRow} onPress={() => navigation.navigate('MapView', { event })}>
-          <Ionicons name="map-outline" size={18} color={colors.primary} />
-          <Text style={[styles.infoText, { color: colors.primary, fontWeight: '600' }]}>Xem trên bản đồ</Text>
-        </TouchableOpacity>
-        <View style={styles.infoRow}>
-          <Ionicons name="people-outline" size={18} color={colors.primary} />
-          <Text style={styles.infoText}>+{event.going} người đã tham gia</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>About Event</Text>
-        <Text style={styles.description}>{event.description}</Text>
+        <View style={{ padding: 16 }}>
+          <Text style={[styles.dateText, { color: '#5669FF' }]}>{event.date} · 20:00</Text>
+          <Text style={[styles.title, { color: themeColors.textPrimary }]}>{event.title}</Text>
+
+          <View style={[styles.organizerBox, { backgroundColor: themeColors.surface, borderColor: themeColors.border }]}>
+            <Image source={{ uri: 'https://i.pravatar.cc/200?img=51' }} style={styles.orgAvatar} />
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={[styles.orgName, { color: themeColors.textPrimary }]}>{event.organizer || 'David Sibia'}</Text>
+              <Text style={[styles.orgRole, { color: themeColors.textSecondary }]}>{t('organizer')}</Text>
+            </View>
+            <TouchableOpacity style={styles.followBtn}>
+              <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 13 }}>{t('follow')}</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Ionicons name="location-outline" size={22} color="#5669FF" />
+            <View style={{ marginLeft: 12, flex: 1 }}>
+              <Text style={[styles.infoTitle, { color: themeColors.textPrimary }]}>{event.location}</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('MapView')}>
+                <Text style={{ color: '#5669FF', fontSize: 13, marginTop: 2, fontWeight: '600' }}>{t('viewOnMap')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={[styles.infoRow, { marginTop: 16 }]}>
+            <Ionicons name="people-outline" size={22} color="#5669FF" />
+            <View style={{ marginLeft: 12, flex: 1 }}>
+              <Text style={[styles.infoTitle, { color: themeColors.textPrimary }]}>+{event.going || 20} {t('goingCount')}</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('InviteFriend')}>
+                <Text style={{ color: '#5669FF', fontSize: 13, marginTop: 2, fontWeight: '600' }}>{t('inviteFriend')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <Text style={[styles.sectionTitle, { color: themeColors.textPrimary, marginTop: 24 }]}>{t('aboutEvent')}</Text>
+          <Text style={[styles.description, { color: themeColors.textSecondary }]}>
+            {event.description || 'Sự kiện âm nhạc hoành tráng được mong chờ nhất trong năm với hệ thống âm thanh, ánh sáng hiện đại bậc nhất.'}
+          </Text>
+        </View>
       </ScrollView>
 
-      {/* Thanh giá + nút mua vé cố định dưới cùng */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.footer, { backgroundColor: themeColors.background, borderTopColor: themeColors.border }]}>
         <View>
-          <Text style={styles.priceLabel}>Price</Text>
-          <Text style={styles.price}>{event.price === 0 ? 'Free' : `$${event.price}`}</Text>
+          <Text style={{ fontSize: 12, color: themeColors.textSecondary }}>{t('price')}</Text>
+          <Text style={{ fontSize: 20, fontWeight: '800', color: '#5669FF' }}>${event.price || 50}</Text>
         </View>
-        <AppButton title="BUY TICKET" showArrow style={{ flex: 1, marginLeft: spacing.md }} onPress={() => navigation.navigate('InviteFriend')} />
+        <TouchableOpacity style={styles.buyBtn} onPress={() => navigation.navigate('Checkout', { event })}>
+          <Text style={styles.buyText}>{t('buyTicket')}</Text>
+          <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={{ marginLeft: 8 }} />
+        </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.white },
-  cover: { width: '100%', height: 320 },
-  headerOverlay: { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: spacing.md, paddingTop: spacing.sm },
-  roundBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(0,0,0,0.35)', alignItems: 'center', justifyContent: 'center' },
-  body: { flex: 1 },
-  date: { color: colors.primary, fontWeight: '700', marginBottom: 6 },
-  title: { fontSize: fontSize.xl, fontWeight: '800', color: colors.textPrimary, marginBottom: spacing.md },
-  organizerRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.background, borderRadius: radius.md, padding: spacing.sm, marginBottom: spacing.md },
-  organizerAvatar: { width: 44, height: 44, borderRadius: 22 },
-  organizerName: { fontWeight: '700', color: colors.textPrimary },
-  organizerLabel: { color: colors.textSecondary, fontSize: fontSize.xs },
-  followBtn: { backgroundColor: colors.primary, paddingHorizontal: spacing.md, paddingVertical: 8, borderRadius: radius.md },
-  followText: { color: colors.white, fontWeight: '700', fontSize: fontSize.xs },
-  infoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm },
-  infoText: { marginLeft: spacing.sm, color: colors.textPrimary, flexShrink: 1 },
-  sectionTitle: { fontSize: fontSize.md, fontWeight: '800', color: colors.textPrimary, marginTop: spacing.md, marginBottom: spacing.sm },
-  description: { color: colors.textSecondary, lineHeight: 20 },
-  bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, padding: spacing.md, borderTopWidth: 1, borderTopColor: colors.border },
-  priceLabel: { color: colors.textSecondary, fontSize: fontSize.xs },
-  price: { fontSize: fontSize.lg, fontWeight: '800', color: colors.textPrimary },
+  container: { flex: 1 },
+  imageContainer: { width: '100%', height: 260, position: 'relative' },
+  bannerImg: { width: '100%', height: '100%' },
+  topActions: { position: 'absolute', top: 16, left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between' },
+  circleBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(0,0,0,0.4)', alignItems: 'center', justifyContent: 'center' },
+  dateText: { fontSize: 14, fontWeight: '700' },
+  title: { fontSize: 24, fontWeight: '800', marginTop: 6 },
+  organizerBox: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 16, borderWidth: 1, marginVertical: 16 },
+  orgAvatar: { width: 48, height: 48, borderRadius: 24 },
+  orgName: { fontSize: 16, fontWeight: '700' },
+  orgRole: { fontSize: 12, marginTop: 2 },
+  followBtn: { backgroundColor: '#5669FF', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },
+  infoRow: { flexDirection: 'row', alignItems: 'center' },
+  infoTitle: { fontSize: 15, fontWeight: '700' },
+  sectionTitle: { fontSize: 18, fontWeight: '800', marginBottom: 8 },
+  description: { fontSize: 14, lineHeight: 22 },
+  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderTopWidth: 1 },
+  buyBtn: { flexDirection: 'row', backgroundColor: '#5669FF', paddingHorizontal: 28, paddingVertical: 14, borderRadius: 16, alignItems: 'center' },
+  buyText: { color: '#FFFFFF', fontWeight: '800', fontSize: 15 },
 });
